@@ -4,7 +4,7 @@
 
 A clean, responsive weather app built with **Next.js**, **TypeScript**, and **Tailwind CSS**. Search any city (or use your current location) to get real-time weather conditions and a 5-day forecast — with full dark mode and Arabic/English language support.
 
-🔗 **Live demo:** [weather-app-lama15.vercel.app](https://weather-app-lama15.vercel.app)
+🔗 **Live demo:**([https://weather-app-lama15.vercel.app](https://weather-app-zeta-roan-79.vercel.app/))
 
 ---
 
