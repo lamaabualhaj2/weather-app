@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -12,15 +14,57 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+@keyframes float-cloud {
+  0% { transform: translateX(-10%); }
+  50% { transform: translateX(10%); }
+  100% { transform: translateX(-10%); }
+}
+
+@keyframes rain-fall {
+  0% { transform: translateY(-10px); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+.animate-float-cloud {
+  animation: float-cloud 15s ease-in-out infinite;
+}
+
+.animate-rain-fall {
+  animation: rain-fall linear infinite;
+}
+@keyframes sun-pulse {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.6; }
+  50% { transform: scale(1.1) rotate(15deg); opacity: 0.8; }
+}
+
+.animate-sun-pulse {
+  animation: sun-pulse 4s ease-in-out infinite;
+}
+@keyframes ray-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-ray-spin {
+  animation: ray-spin 20s linear infinite;
+}
+@keyframes dust-drift {
+  0% { transform: translateX(-10%); opacity: 0.3; }
+  50% { transform: translateX(10%); opacity: 0.6; }
+  100% { transform: translateX(-10%); opacity: 0.3; }
+}
+
+.animate-dust-drift {
+  animation: dust-drift 8s ease-in-out infinite;
 }
