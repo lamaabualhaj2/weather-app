@@ -27,14 +27,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
       Search for a city
     </label>
 
-    <input
+   <input
   id="city-search"
   type="text"
   value={value}
   onChange={onChange}
   placeholder={placeholder}
   disabled={isLoading}
-  className="..."
+  className="w-full h-20 sm:h-16 bg-transparent text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-400 rounded-xl px-4 sm:px-5 text-base sm:text-lg disabled:cursor-not-allowed disabled:opacity-60"
 />
 
     <button
