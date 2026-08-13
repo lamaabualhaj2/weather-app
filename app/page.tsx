@@ -64,94 +64,106 @@ export default function HomePage() {
     return t.stormy;
   };
 
-  const fetchWeatherByCity = async (city: string) => {
-  const res = await fetch(`/api/weather?city=${encodeURIComponent(city)}&lang=${language}`);
-  return res.json();
-};
+  const fetchWeatherByCity = async (city: string, lang: Language = language) => {
+    const res = await fetch(`/api/weather?city=${encodeURIComponent(city)}&lang=${lang}`);
+    return res.json();
+  };
+
   const fetchWeatherByCoords = async (lat: number, lon: number) => {
     const res = await fetch(`/api/weather?lat=${lat}&lon=${lon}`);
     return res.json();
   };
 
- useEffect(() => {
-  const loadInitialWeather = async () => {
-    setIsLoading(true);
-    setError("");
+  // استرجاع اللغة المحفوظة عند فتح الصفحة
+  useEffect(() => {
+    const savedLang = localStorage.getItem("language") as Language | null;
+    if (savedLang) setLanguage(savedLang);
+  }, []);
 
-    const savedCity = localStorage.getItem("lastCity");
+  useEffect(() => {
+    const loadInitialWeather = async () => {
+      setIsLoading(true);
+      setError("");
 
-    if (savedCity) {
-      const data = await fetchWeatherByCity(savedCity);
-      if (data.error) setError(data.error);
-      else setWeather(data);
-      setIsLoading(false);
-      return;
-    }
+      const savedCity = localStorage.getItem("lastCity");
+      const savedLang = (localStorage.getItem("language") as Language | null) || "en";
 
-    if (!navigator.geolocation) {
-      const data = await fetchWeatherByCity("Amman");
-      if (data.error) setError(data.error);
-      else setWeather(data);
-      setIsLoading(false);
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const data = await fetchWeatherByCoords(
-          position.coords.latitude,
-          position.coords.longitude
-        );
+      if (savedCity) {
+        const data = await fetchWeatherByCity(savedCity, savedLang);
         if (data.error) setError(data.error);
         else setWeather(data);
         setIsLoading(false);
-      },
-      async () => {
-        const data = await fetchWeatherByCity("Amman");
-        if (data.error) setError(data.error);
-        else setWeather(data);
-        setIsLoading(false);
+        return;
       }
-    );
-  };
 
-  loadInitialWeather();
-}, []);
+      if (!navigator.geolocation) {
+        const data = await fetchWeatherByCity("Amman", savedLang);
+        if (data.error) setError(data.error);
+        else setWeather(data);
+        setIsLoading(false);
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const data = await fetchWeatherByCoords(
+            position.coords.latitude,
+            position.coords.longitude
+          );
+          if (data.error) setError(data.error);
+          else setWeather(data);
+          setIsLoading(false);
+        },
+        async () => {
+          const data = await fetchWeatherByCity("Amman", savedLang);
+          if (data.error) setError(data.error);
+          else setWeather(data);
+          setIsLoading(false);
+        }
+      );
+    };
+
+    loadInitialWeather();
+  }, []);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(event.target.value);
   };
 
-const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-  event.preventDefault();
-  const city = query.trim();
-  if (!city) return;
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const city = query.trim();
+    if (!city) return;
 
-  setIsLoading(true);
-  setError("");
-  try {
-    const data = await fetchWeatherByCity(city);
-    if (!data.error) {
-      setWeather(data);
-      localStorage.setItem("lastCity", city);
-    } else {
-      setError(data.error);
+    setIsLoading(true);
+    setError("");
+    try {
+      const data = await fetchWeatherByCity(city);
+      if (!data.error) {
+        setWeather(data);
+        localStorage.setItem("lastCity", city);
+      } else {
+        setError(data.error);
+        setWeather(null);
+      }
+    } catch (err) {
+      setError("Failed to fetch weather. Please try again.");
       setWeather(null);
+    } finally {
+      setIsLoading(false);
     }
-  } catch (err) {
-    setError("Failed to fetch weather. Please try again.");
-    setWeather(null);
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   const toggleUnit = () => {
     setUnit((prev) => (prev === "C" ? "F" : "C"));
   };
 
   const toggleLanguage = () => {
-    setLanguage((prev) => (prev === "en" ? "ar" : "en"));
+    setLanguage((prev) => {
+      const next = prev === "en" ? "ar" : "en";
+      localStorage.setItem("language", next);
+      return next;
+    });
   };
 
   return (
@@ -197,6 +209,9 @@ const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         {weather && (
           <>
             <div className="text-center">
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                {weather.city}, {weather.country}
+              </p>
               <p className="text-6xl font-bold text-slate-900 dark:text-white">
                 {unit === "F"
                   ? `${Math.round(weather.current.temperature_2m_f)}°F`
