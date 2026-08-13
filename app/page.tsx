@@ -73,67 +73,78 @@ export default function HomePage() {
     return res.json();
   };
 
-  useEffect(() => {
-    const loadInitialWeather = async () => {
-      setIsLoading(true);
-      setError("");
+ useEffect(() => {
+  const loadInitialWeather = async () => {
+    setIsLoading(true);
+    setError("");
 
-      if (!navigator.geolocation) {
+    const savedCity = localStorage.getItem("lastCity");
+
+    if (savedCity) {
+      const data = await fetchWeatherByCity(savedCity);
+      if (data.error) setError(data.error);
+      else setWeather(data);
+      setIsLoading(false);
+      return;
+    }
+
+    if (!navigator.geolocation) {
+      const data = await fetchWeatherByCity("Amman");
+      if (data.error) setError(data.error);
+      else setWeather(data);
+      setIsLoading(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const data = await fetchWeatherByCoords(
+          position.coords.latitude,
+          position.coords.longitude
+        );
+        if (data.error) setError(data.error);
+        else setWeather(data);
+        setIsLoading(false);
+      },
+      async () => {
         const data = await fetchWeatherByCity("Amman");
         if (data.error) setError(data.error);
         else setWeather(data);
         setIsLoading(false);
-        return;
       }
+    );
+  };
 
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const data = await fetchWeatherByCoords(
-            position.coords.latitude,
-            position.coords.longitude
-          );
-          if (data.error) setError(data.error);
-          else setWeather(data);
-          setIsLoading(false);
-        },
-        async () => {
-          const data = await fetchWeatherByCity("Amman");
-          if (data.error) setError(data.error);
-          else setWeather(data);
-          setIsLoading(false);
-        }
-      );
-    };
-
-    loadInitialWeather();
-  }, []);
+  loadInitialWeather();
+}, []);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(event.target.value);
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const city = query.trim();
-    if (!city) return;
+const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  event.preventDefault();
+  const city = query.trim();
+  if (!city) return;
 
-    setIsLoading(true);
-    setError("");
-    try {
-      const data = await fetchWeatherByCity(city);
-      if (!data.error) {
-        setWeather(data);
-      } else {
-        setError(data.error);
-        setWeather(null);
-      }
-    } catch (err) {
-      setError("Failed to fetch weather. Please try again.");
+  setIsLoading(true);
+  setError("");
+  try {
+    const data = await fetchWeatherByCity(city);
+    if (!data.error) {
+      setWeather(data);
+      localStorage.setItem("lastCity", city);
+    } else {
+      setError(data.error);
       setWeather(null);
-    } finally {
-      setIsLoading(false);
     }
-  };
+  } catch (err) {
+    setError("Failed to fetch weather. Please try again.");
+    setWeather(null);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const toggleUnit = () => {
     setUnit((prev) => (prev === "C" ? "F" : "C"));
