@@ -9,8 +9,12 @@ import { useTheme } from "./hooks/useTheme";
 import WeatherBackground from "./components/WeatherBackground";
 import { translations, Language } from "./lib/translations";
 
-type WeatherData = {
-  city: string;
+type Suggestion = {
+  name: string;
+  country: string;
+};
+
+type WeatherData = {  city: string;
   country: string;
   current: {
     temperature_2m: number;
@@ -52,6 +56,7 @@ export default function HomePage() {
   const [language, setLanguage] = useState<Language>("en");
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [error, setError] = useState("");
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const { theme, toggleTheme } = useTheme();
 
   const t = translations[language];
@@ -132,16 +137,45 @@ useEffect(() => {
   }, []);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(event.target.value);
-  };
+  setQuery(event.target.value);
+};
+
+useEffect(() => {
+  const trimmed = query.trim();
+
+  if (trimmed.length < 2) {
+    setSuggestions([]);
+    return;
+  }
+
+  const timeoutId = setTimeout(async () => {
+    try {
+      const res = await fetch(
+        `/api/suggestions?q=${encodeURIComponent(trimmed)}&lang=${language}`
+      );
+      const data = await res.json();
+      setSuggestions(data.results || []);
+    } catch {
+      setSuggestions([]);
+    }
+  }, 400);
+
+  return () => clearTimeout(timeoutId);
+}, [query, language]);
+
+const handleSelectSuggestion = (cityName: string) => {
+  setQuery(cityName);
+  setSuggestions([]);
+};
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const city = query.trim();
-    if (!city) return;
+  event.preventDefault();
+  const city = query.trim();
+  if (!city) return;
 
-    setIsLoading(true);
-    setError("");
+  setSuggestions([]);
+  setIsLoading(true);
+  setError("");
     try {
       const data = await fetchWeatherByCity(city);
       if (!data.error) {
@@ -193,14 +227,16 @@ useEffect(() => {
         </section>
 
        <SearchBar
-  value={query}
-  onChange={handleChange}
-  onSubmit={handleSubmit}
-  isLoading={isLoading}
-  placeholder={t.searchPlaceholder}
-  searchLabel={t.search}
-  searchingLabel={t.searching}
-/>
+        value={query}
+       onChange={handleChange}
+       onSubmit={handleSubmit}
+       isLoading={isLoading}
+       placeholder={t.searchPlaceholder}
+       searchLabel={t.search}
+       searchingLabel={t.searching}
+       suggestions={suggestions}
+       onSelectSuggestion={handleSelectSuggestion}
+       />
 
         {isLoading && !weather && (
           <p className="text-center text-slate-500 dark:text-slate-400">
