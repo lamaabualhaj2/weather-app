@@ -76,9 +76,14 @@ export default function HomePage() {
 
   // استرجاع اللغة المحفوظة عند فتح الصفحة
   useEffect(() => {
-    const savedLang = localStorage.getItem("language") as Language | null;
-    if (savedLang) setLanguage(savedLang);
-  }, []);
+  const savedLang = localStorage.getItem("language") as Language | null;
+  if (savedLang) setLanguage(savedLang);
+}, []);
+
+useEffect(() => {
+  document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
+  document.documentElement.lang = language;
+}, [language]);
 
   useEffect(() => {
     const loadInitialWeather = async () => {
@@ -187,12 +192,15 @@ export default function HomePage() {
           </p>
         </section>
 
-        <SearchBar
-          value={query}
-          onChange={handleChange}
-          onSubmit={handleSubmit}
-          isLoading={isLoading}
-        />
+       <SearchBar
+  value={query}
+  onChange={handleChange}
+  onSubmit={handleSubmit}
+  isLoading={isLoading}
+  placeholder={t.searchPlaceholder}
+  searchLabel={t.search}
+  searchingLabel={t.searching}
+/>
 
         {isLoading && !weather && (
           <p className="text-center text-slate-500 dark:text-slate-400">

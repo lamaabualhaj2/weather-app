@@ -36,6 +36,7 @@ export const translations = {
     cloudy: "غائم",
     rainy: "ممطر",
     stormy: "عاصف",
+    
   },
 };
 
