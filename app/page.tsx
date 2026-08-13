@@ -148,19 +148,27 @@ useEffect(() => {
     return;
   }
 
+  const controller = new AbortController();
+
   const timeoutId = setTimeout(async () => {
     try {
       const res = await fetch(
-        `/api/suggestions?q=${encodeURIComponent(trimmed)}&lang=${language}`
+        `/api/suggestions?q=${encodeURIComponent(trimmed)}&lang=${language}`,
+        { signal: controller.signal }
       );
       const data = await res.json();
       setSuggestions(data.results || []);
-    } catch {
-      setSuggestions([]);
+    } catch (err: any) {
+      if (err.name !== "AbortError") {
+        setSuggestions([]);
+      }
     }
-  }, 400);
+  }, 300);
 
-  return () => clearTimeout(timeoutId);
+  return () => {
+    clearTimeout(timeoutId);
+    controller.abort();
+  };
 }, [query, language]);
 
 const handleSelectSuggestion = (cityName: string) => {
