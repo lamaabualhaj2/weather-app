@@ -68,8 +68,10 @@ export async function GET(request: NextRequest) {
       let name = "Your Location";
       let country = "";
       try {
+        // مررنا langParam هون بدل ما نثبتها على "en" دايماً،
+        // حتى اسم المدينة/الدولة يرجع بنفس لغة الواجهة
         const reverseRes = await fetch(
-          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=${langParam}`
         );
         const reverseData = await reverseRes.json();
         name = reverseData.city || reverseData.locality || name;

@@ -36,8 +36,33 @@ export const translations = {
     cloudy: "غائم",
     rainy: "ممطر",
     stormy: "عاصف",
-    
   },
 };
 
 export type Language = "en" | "ar";
+
+// أسماء الأيام بالعربي والإنجليزي — getDay() بيرجع 0 للأحد لغاية 6 للسبت
+const dayNamesEn = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
+const dayNamesAr = [
+  "الأحد",
+  "الاثنين",
+  "الثلاثاء",
+  "الأربعاء",
+  "الخميس",
+  "الجمعة",
+  "السبت",
+];
+
+export function dayName(dateStr: string, language: Language): string {
+  const dayIndex = new Date(dateStr).getDay();
+  return language === "ar" ? dayNamesAr[dayIndex] : dayNamesEn[dayIndex];
+}
